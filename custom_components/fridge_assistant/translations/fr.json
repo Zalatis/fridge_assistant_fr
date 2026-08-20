@@ -46,6 +46,9 @@
       },
       "expired": {
         "name": "Expirés"
+      },
+      "items_inventory": {
+        "name": "Inventaire des produits"
       }
     }
   },

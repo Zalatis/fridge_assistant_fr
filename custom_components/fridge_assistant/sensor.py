@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -10,8 +12,8 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_WARN_DAYS, DOMAIN, LOCATIONS, SIGNAL_UPDATED, resolve_language
-from .coordinator import FridgeRuntime, item_summary
+from .const import CONF_WARN_DAYS, DOMAIN, LOCATIONS, SIGNAL_UPDATED, STORAGE_KEY, resolve_language
+from .coordinator import FridgeRuntime, inventory_item_row, item_summary
 
 
 async def async_setup_entry(
@@ -25,6 +27,7 @@ async def async_setup_entry(
             FridgeTotalSensor(runtime),
             FridgeExpiringSensor(runtime),
             FridgeExpiredSensor(runtime),
+            FridgeInventorySensor(runtime),
         ]
     )
 
@@ -126,3 +129,45 @@ class FridgeExpiredSensor(_FridgeSensorBase):
         return {
             "items": [item_summary(i, today) for i in self._runtime.store.expired_items(today)]
         }
+
+
+class FridgeInventorySensor(_FridgeSensorBase):
+    """Lists every active item with name, contents, quantity and expiry date."""
+
+    _attr_translation_key = "items_inventory"
+    _attr_icon = "mdi:clipboard-list-outline"
+    _attr_native_unit_of_measurement = "items"
+
+    def __init__(self, runtime: FridgeRuntime) -> None:
+        super().__init__(runtime, "items_inventory")
+
+    @property
+    def native_value(self) -> int:
+        return len(self._runtime.store.items)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        today = dt_util.now().date()
+        items = list(self._runtime.store.items.values())
+        items.sort(
+            key=lambda i: (
+                i.get("expiry_date") is None,
+                i.get("expiry_date") or "",
+                (i.get("name") or "").lower(),
+            )
+        )
+        attrs = {
+            "storage_key": STORAGE_KEY,
+            "storage_file": self.hass.config.path(f".storage/{STORAGE_KEY}"),
+            "items": [inventory_item_row(i, today) for i in items],
+        }
+        attrs.update(self._storage_stats())
+        return attrs
+
+    def _storage_stats(self) -> dict[str, str]:
+        """Expose on-disk storage metadata (same blob the integration persists)."""
+        path = Path(self.hass.config.path(f".storage/{STORAGE_KEY}"))
+        if not path.is_file():
+            return {}
+        stat = path.stat()
+        return {"storage_modified": dt_util.utc_from_timestamp(stat.st_mtime).isoformat()}

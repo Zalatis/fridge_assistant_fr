@@ -94,6 +94,21 @@ def item_summary(item: dict[str, Any], today: date) -> dict[str, Any]:
     }
 
 
+def inventory_item_row(item: dict[str, Any], today: date | None = None) -> dict[str, Any]:
+    """Full row for the inventory sensor (automations, external tools)."""
+    row = {
+        "id": item.get("id"),
+        "code": item.get("code"),
+        "name": item.get("name"),
+        "contents": item.get("contents"),
+        "quantity": item.get("quantity"),
+        "expiry_date": item.get("expiry_date"),
+    }
+    if today is not None:
+        row["days_left"] = item_days_left(item, today)
+    return row
+
+
 class FridgeRuntime:
     """Per-config-entry runtime; owns the store and side effects."""
 

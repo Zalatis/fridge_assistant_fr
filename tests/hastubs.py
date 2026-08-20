@@ -69,11 +69,25 @@ def install_stubs() -> None:
     util = _register("homeassistant.util")
     dt = _register("homeassistant.util.dt")
     dt.now = lambda: datetime.now(timezone.utc)
+    dt.utc_from_timestamp = lambda ts: datetime.fromtimestamp(ts, timezone.utc)
     util.dt = dt
+
+    components = _register("homeassistant.components")
+    persistent_notification = _register("homeassistant.components.persistent_notification")
+    components.persistent_notification = persistent_notification
+
+    config_entries = _register("homeassistant.config_entries")
+    config_entries.ConfigEntry = type("ConfigEntry", (), {})
+    ha.config_entries = config_entries
+
+    dispatcher = _register("homeassistant.helpers.dispatcher")
+    dispatcher.async_dispatcher_send = lambda *a, **k: None
+    helpers.dispatcher = dispatcher
 
     ha.core = core
     ha.helpers = helpers
     ha.util = util
+    ha.components = components
     helpers.storage = storage
     helpers.aiohttp_client = aiohttp_client
 

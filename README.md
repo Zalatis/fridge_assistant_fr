@@ -282,13 +282,41 @@ Developer Tools → Actions.
 
 ## Sensors
 
-Three sensors are created per config entry:
+Four sensors are created per config entry:
 
 - **Total items** — count of everything currently in the inventory.
 - **Expiring soon** — count of items within the warning window (not yet past date).
 - **Expired** — count of items already past their date.
+- **Product inventory** — same count as *Total items*, plus a full `items` attribute list.
 
 Both expiry sensors expose the matching item list (code, name, days left, ...) as attributes.
+
+The **Product inventory** sensor (`sensor.*_items_inventory`) exposes every active product for
+automations and external tools:
+
+| Attribute | Description |
+|-----------|-------------|
+| `storage_key` | `fridge_assistant.data` (Home Assistant Store key) |
+| `storage_file` | Absolute path, e.g. `/config/.storage/fridge_assistant.data` |
+| `storage_modified` | Last write time of that file (UTC ISO), when present |
+| `items` | List of objects, each with `name`, `contents`, `quantity`, `expiry_date`, plus `id`, `code`, `days_left` |
+
+Example attribute row:
+
+```yaml
+items:
+  - id: "…"
+    code: "AB12"
+    name: "Yaourt"
+    contents: "Yaourt nature"
+    quantity: "500 g"
+    expiry_date: "2026-08-25"
+    days_left: 5
+```
+
+The sensor reads live data from the integration store (the same source persisted to
+`.storage/fridge_assistant.data`). Reload the integration or restart Home Assistant after upgrading
+to pick up the new entity.
 
 ## Optional: Label Printer add-on
 

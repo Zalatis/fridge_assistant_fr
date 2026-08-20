@@ -45,6 +45,9 @@
       },
       "expired": {
         "name": "Expired"
+      },
+      "items_inventory": {
+        "name": "Product inventory"
       }
     }
   },
