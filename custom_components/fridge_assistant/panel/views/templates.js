@@ -6,6 +6,16 @@
 import { esc } from "../lib/format.js";
 import { openSurface } from "../lib/surface.js";
 
+function templateMatchesQuery(panel, t, qq) {
+  const hay = [
+    t.name,
+    panel._templateName(t),
+    ...(t.aliases || []),
+    panel._catMeta(t.category).label || t.category,
+  ].join(" ").toLowerCase();
+  return hay.includes(qq);
+}
+
 export function openTemplatePicker(panel, onPick) {
   const templates = panel._state.templates;
   const kinds = panel._state.kinds || {};
@@ -29,14 +39,14 @@ export function openTemplatePicker(panel, onPick) {
     const filtered = templates.filter((t) => {
       if (kindFilter !== "all" && panel._kindOf(t) !== kindFilter) return false;
       if (!qq) return true;
-      return t.name.toLowerCase().includes(qq) || (t.aliases || []).some((a) => a.toLowerCase().includes(qq));
+      return templateMatchesQuery(panel, t, qq);
     });
     listEl.innerHTML = filtered.map((t) => {
       const c = panel._catMeta(t.category);
       const sl = t.shelf_life || {};
       return `<button class="tp-item" data-id="${t.id}">
         <span class="tp-emoji">${t.emoji || c.emoji || "🍽️"}</span>
-        <span class="tp-name"><b>${esc(t.name)}</b><small>${panel._kindMeta(panel._kindOf(t)).emoji || ""} ${esc(c.label || t.category)}${t.source === "user" || t.source === "ai" ? panel.t("ownSuffix") : ""}</small></span>
+        <span class="tp-name"><b>${esc(panel._templateName(t))}</b><small>${panel._kindMeta(panel._kindOf(t)).emoji || ""} ${esc(c.label || t.category)}${t.source === "user" || t.source === "ai" ? panel.t("ownSuffix") : ""}</small></span>
         <span class="tp-sl">${["fridge", "freezer", "pantry"].map((l) => sl[l] ? `<i>${panel._locMeta(l).emoji || ""}${sl[l]}d</i>` : "").join("")}</span>
       </button>`;
     }).join("") || `<div class="empty small"><p>${panel.t("nothingFound")}</p></div>`;
@@ -87,7 +97,7 @@ export function openTemplatesManager(panel) {
       listEl.innerHTML = hidden.map((t) => {
         const c = panel._catMeta(t.category);
         return `<div class="tp-item"><span class="tp-emoji">${t.emoji || c.emoji || "🍽️"}</span>
-          <span class="tp-name"><b>${esc(t.name)}</b><small>${esc(c.label || t.category)}</small></span>
+          <span class="tp-name"><b>${esc(panel._templateName(t))}</b><small>${esc(c.label || t.category)}</small></span>
           <button class="s-mini" data-unhide="${t.id}">${panel.t("backBtn")}</button></div>`;
       }).join("") || `<div class="empty small"><p>${panel.t("nothingHidden")}</p></div>`;
       listEl.querySelectorAll("[data-unhide]").forEach((b) =>
@@ -101,9 +111,7 @@ export function openTemplatesManager(panel) {
     const templates = panel._state.templates.filter((t) => {
       if (kindFilter !== "all" && panel._kindOf(t) !== kindFilter) return false;
       if (!qq) return true;
-      return t.name.toLowerCase().includes(qq)
-        || (t.aliases || []).some((a) => a.toLowerCase().includes(qq))
-        || (panel._catMeta(t.category).label || "").toLowerCase().includes(qq);
+      return templateMatchesQuery(panel, t, qq);
     });
     listEl.innerHTML = templates.map((t) => {
       const c = panel._catMeta(t.category);
@@ -113,7 +121,7 @@ export function openTemplatesManager(panel) {
         : "";
       return `<button class="tp-item" data-id="${t.id}">
         <span class="tp-emoji">${t.emoji || c.emoji || "🍽️"}</span>
-        <span class="tp-name"><b>${esc(t.name)}${badge}</b><small>${panel._kindMeta(panel._kindOf(t)).emoji || ""} ${esc(c.label || t.category)}</small></span>
+        <span class="tp-name"><b>${esc(panel._templateName(t))}${badge}</b><small>${panel._kindMeta(panel._kindOf(t)).emoji || ""} ${esc(c.label || t.category)}</small></span>
         <span class="tp-sl">${["fridge", "freezer", "pantry"].map((l) => sl[l] ? `<i>${panel._locMeta(l).emoji || ""}${sl[l]}d</i>` : "").join("")}</span>
       </button>`;
     }).join("") || `<div class="empty small"><p>${panel.t("nothingInGroup")}</p></div>`;

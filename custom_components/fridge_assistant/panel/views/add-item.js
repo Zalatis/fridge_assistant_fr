@@ -102,7 +102,7 @@ export function openAddModal(panel, prefill = {}, editItem = null) {
     if (a) a.addEventListener("click", () => aiEstimate(panel, query, aiCtx()));
     const o = q("#s-other");
     if (o) o.addEventListener("click", () =>
-      panel._openTemplatePicker((t) => { m.noAutoMatch = false; nameEl.value = t.name; doMatch(); }));
+      panel._openTemplatePicker((t) => { m.noAutoMatch = false; nameEl.value = panel._templateName(t); doMatch(); }));
   };
 
   // Shown when nothing matched, or after the user rejected a wrong guess.
@@ -142,7 +142,7 @@ export function openAddModal(panel, prefill = {}, editItem = null) {
       suggestEl.innerHTML = `
         <button type="button" class="s-take" id="s-take" title="${panel.t("useTemplateNameTitle")}">
           <span class="s-emoji">${t.emoji || "📋"}</span>
-          <div class="s-body"><b>${esc(t.name)}</b>
+          <div class="s-body"><b>${esc(panel._templateName(t))}</b>
             <div class="s-sub">${noHere ? panel.t("notSuitableHere") : panel.t("daysAtLocation", panel._locMeta(m.location).label, sl[m.location])}${t.notes ? " · " + esc(t.notes) : ""}</div></div>
         </button>
         <div class="s-actions">
@@ -154,10 +154,11 @@ export function openAddModal(panel, prefill = {}, editItem = null) {
       // Tap the recognised template to adopt its (full) name — handy when
       // the match appeared while the user was still halfway through typing.
       q("#s-take").addEventListener("click", () => {
-        nameEl.value = t.name;
-        lastMatched = t.name;
+        const displayName = panel._templateName(t);
+        nameEl.value = displayName;
+        lastMatched = displayName;
         nameEl.focus();
-        nameEl.setSelectionRange(t.name.length, t.name.length);
+        nameEl.setSelectionRange(displayName.length, displayName.length);
       });
       const d = q("#s-dismiss");
       if (d) d.addEventListener("click", () => {
@@ -211,7 +212,7 @@ export function openAddModal(panel, prefill = {}, editItem = null) {
   });
   if (q("#f-emojiin")) q("#f-emojiin").addEventListener("input", (e) => setEmoji(e.target.value || "🍽️"));
   q("#f-template").addEventListener("click", () =>
-    panel._openTemplatePicker((t) => { nameEl.value = t.name; doMatch(); })
+    panel._openTemplatePicker((t) => { nameEl.value = panel._templateName(t); doMatch(); })
   );
 
   q("#f-submit").addEventListener("click", async () => {

@@ -222,8 +222,10 @@ household can each see their own language); server-rendered text (printed labels
 notification, AI prompts) reads Home Assistant's system-configured language, since those aren't tied
 to a specific browser session.
 
-> The 99-recipe shelf-life database itself (product names, storage tips) is Dutch content — a
-> different kind of project than UI translation — and isn't translated by this rule.
+> The 99-recipe shelf-life database stores Dutch product names and storage tips in
+> `seed_templates.json`. The panel shows **localized display names** for built-in templates in
+> French and English (`panel/template-names.js`); Dutch keeps the seed names. Template notes in the
+> editor and AI prompts still use the stored Dutch text.
 
 ## Installation
 
@@ -320,8 +322,8 @@ URL if yours differs — an add-on installed from the repository gets a hostname
 
 ## Known limitations
 
-- Only Dutch, French and English exist for the UI (see [Language](#language)) — the 99-recipe database's product names
-  and notes stay Dutch regardless of the UI language.
+- Only Dutch, French and English exist for the UI (see [Language](#language)) — built-in template
+  names are localized in the panel for French and English; storage tips in the seed data stay Dutch.
 - Live camera barcode scanning requires a secure context (HTTPS); it degrades gracefully to
   photo-capture or manual entry otherwise.
 - The label printer add-on has been tested against DYMO LabelWriter 400/450/550 (99014 labels) and a
@@ -347,6 +349,7 @@ custom_components/fridge_assistant/
 ├── panel/                    # the mobile-first custom panel — native ES modules, no build step
 │   ├── fridge-assistant-panel.js  # entry: custom element, shell, list, filters
 │   ├── strings.js                 # all nl/fr/en UI strings + label maps
+│   ├── template-names.js          # fr/en display names for the 99 built-in templates
 │   ├── styles.js                  # all CSS (injected into the shadow root)
 │   ├── lib/                       # format helpers + modal/drawer/toast surfaces
 │   ├── views/                     # one module per view (inspector, add, scanner, …)

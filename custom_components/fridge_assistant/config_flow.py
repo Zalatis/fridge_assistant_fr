@@ -28,6 +28,7 @@ from .const import (
     CONF_OPENAI_MODEL,
     CONF_PRINTER_ENABLED,
     CONF_PRINTER_URL,
+    CONF_SHOW_PHOTOS,
     CONF_WARN_DAYS,
     DOMAIN,
 )
@@ -138,5 +139,8 @@ class FridgeAssistantOptionsFlow(OptionsFlow):
                         min=1, max=10, step=1, mode=selector.NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Optional(
+                    CONF_SHOW_PHOTOS, description=sv(CONF_SHOW_PHOTOS)
+                ): selector.BooleanSelector(),
             }
         )

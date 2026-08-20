@@ -77,11 +77,31 @@ ha-icon{--mdc-icon-size:18px;vertical-align:-4px;}
 .search input::placeholder{color:var(--fa-muted);}
 .search.big{height:48px;margin:6px 0 12px;}
 
-/* Chips scroll edge-to-edge but rest exactly on the page gutter. */
-.filters{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+/* Chips scroll edge-to-edge; arrows sit on the gutters when overflow exists. */
+.filters-bar{position:relative;
   margin:0 calc(-1 * var(--fa-gr)) 0 calc(-1 * var(--fa-gl));
   padding:12px var(--fa-gr) 14px var(--fa-gl);}
+.filters{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+  scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
 .filters::-webkit-scrollbar{display:none;}
+.filters-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--fa-line);
+  background:color-mix(in srgb,var(--fa-card) 92%,transparent);
+  color:var(--fa-text);cursor:pointer;flex:none;display:inline-flex;
+  align-items:center;justify-content:center;box-shadow:var(--fa-shadow-s);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:opacity .15s,transform .15s var(--fa-ease);}
+.filters-arrow ha-icon{--mdc-icon-size:22px;}
+.filters-arrow:active{transform:translateY(-50%) scale(.92);}
+.filters-arrow-left{left:calc(var(--fa-gl) + 2px);}
+.filters-arrow-right{right:calc(var(--fa-gr) + 2px);}
+.filters-bar::before,.filters-bar::after{content:"";position:absolute;top:12px;bottom:14px;width:28px;
+  pointer-events:none;z-index:1;opacity:0;transition:opacity .15s;}
+.filters-bar::before{left:var(--fa-gl);
+  background:linear-gradient(to right,var(--fa-bg),transparent);}
+.filters-bar::after{right:var(--fa-gr);
+  background:linear-gradient(to left,var(--fa-bg),transparent);}
+.filters-bar.can-scroll-left::before,.filters-bar.can-scroll-right::after{opacity:1;}
 .chip{white-space:nowrap;border:1px solid var(--fa-line);background:var(--fa-card);
   color:var(--fa-text);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700;
   cursor:pointer;box-shadow:var(--fa-shadow-s);

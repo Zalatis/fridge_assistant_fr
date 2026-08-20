@@ -10,6 +10,7 @@
  */
 
 import { CATEGORY_LABELS, KIND_LABELS, LOCATION_LABELS, STATUS_COLOR, STRINGS } from "./strings.js";
+import { templateDisplayName } from "./template-names.js";
 import { STYLES } from "./styles.js";
 import { daysLabel, esc, fmtDate } from "./lib/format.js";
 import { openModal, toast, wireDateField } from "./lib/surface.js";
@@ -93,6 +94,10 @@ class FridgeAssistantPanel extends HTMLElement {
     const table = (KIND_LABELS[this._lang()] || KIND_LABELS.en)[key] || {};
     const label = table.label || base.label || key;
     return { ...base, label, short: table.short || base.short || label };
+  }
+
+  _templateName(tpl) {
+    return templateDisplayName(tpl, this._lang());
   }
 
   async _subscribe() {
@@ -200,7 +205,11 @@ class FridgeAssistantPanel extends HTMLElement {
             <button class="btn ghost icon-only" id="btn-clean" title="${this.t("cleanUp")}"><ha-icon icon="mdi:broom"></ha-icon></button>
           </div>
         </header>
-        <nav class="filters" id="filters"></nav>
+        <div class="filters-bar" id="filters-bar">
+          <button type="button" class="filters-arrow filters-arrow-left" id="filters-prev" aria-label="${this.t("filterScrollPrev")}" hidden><ha-icon icon="mdi:chevron-left"></ha-icon></button>
+          <nav class="filters" id="filters"></nav>
+          <button type="button" class="filters-arrow filters-arrow-right" id="filters-next" aria-label="${this.t("filterScrollNext")}" hidden><ha-icon icon="mdi:chevron-right"></ha-icon></button>
+        </div>
         <main id="list"><div class="loading">${this.t("loading")}</div></main>
       </div>
       <button class="fab fab-scan" id="fab-scan" aria-label="${this.t("scanAria")}"><ha-icon icon="mdi:barcode-scan"></ha-icon></button>
@@ -222,8 +231,57 @@ class FridgeAssistantPanel extends HTMLElement {
       this._search = e.target.value;
       this._renderList();
     });
+    this._wireFilterScroll();
     this._applyChrome();
     if (this._state) this._onState();
+  }
+
+  _wireFilterScroll() {
+    const bar = this.shadowRoot.getElementById("filters");
+    const prev = this.shadowRoot.getElementById("filters-prev");
+    const next = this.shadowRoot.getElementById("filters-next");
+    if (!bar || !prev || !next || this._filterScrollWired) return;
+    this._filterScrollWired = true;
+    const step = () => Math.max(120, bar.clientWidth * 0.65);
+    prev.addEventListener("click", () => bar.scrollBy({ left: -step(), behavior: "smooth" }));
+    next.addEventListener("click", () => bar.scrollBy({ left: step(), behavior: "smooth" }));
+    bar.addEventListener("scroll", () => this._updateFilterArrows(), { passive: true });
+    if (typeof ResizeObserver !== "undefined") {
+      this._filterResizeObs = new ResizeObserver(() => this._updateFilterArrows());
+      this._filterResizeObs.observe(bar);
+    }
+  }
+
+  _updateFilterArrows() {
+    const wrap = this.shadowRoot && this.shadowRoot.getElementById("filters-bar");
+    const bar = this.shadowRoot && this.shadowRoot.getElementById("filters");
+    const prev = this.shadowRoot && this.shadowRoot.getElementById("filters-prev");
+    const next = this.shadowRoot && this.shadowRoot.getElementById("filters-next");
+    if (!bar || !prev || !next) return;
+    const max = bar.scrollWidth - bar.clientWidth;
+    const sl = bar.scrollLeft;
+    const edge = 2;
+    const canLeft = sl > edge;
+    const canRight = max > edge && sl < max - edge;
+    prev.hidden = !canLeft;
+    next.hidden = !canRight;
+    if (wrap) {
+      wrap.classList.toggle("can-scroll-left", canLeft);
+      wrap.classList.toggle("can-scroll-right", canRight);
+    }
+  }
+
+  _scrollActiveFilterIntoView() {
+    const bar = this.shadowRoot && this.shadowRoot.getElementById("filters");
+    if (!bar) return;
+    const active = bar.querySelector(".chip.active");
+    if (!active) return;
+    const left = active.offsetLeft;
+    const right = left + active.offsetWidth;
+    const viewL = bar.scrollLeft;
+    const viewR = viewL + bar.clientWidth;
+    if (left < viewL + 36) bar.scrollTo({ left: Math.max(0, left - 36), behavior: "smooth" });
+    else if (right > viewR - 36) bar.scrollTo({ left: right - bar.clientWidth + 36, behavior: "smooth" });
   }
 
   _applyChrome() {
@@ -294,6 +352,8 @@ class FridgeAssistantPanel extends HTMLElement {
     el.querySelectorAll("[data-loc]").forEach((b) => b.addEventListener("click", () => { this._filterLoc = b.dataset.loc; this._renderFilters(); this._renderList(); }));
     el.querySelectorAll("[data-kind]").forEach((b) => b.addEventListener("click", () => { this._filterKind = b.dataset.kind; this._renderFilters(); this._renderList(); }));
     el.querySelectorAll("[data-cat]").forEach((b) => b.addEventListener("click", () => { this._filterCat = b.dataset.cat; this._renderFilters(); this._renderList(); }));
+    this._scrollActiveFilterIntoView();
+    requestAnimationFrame(() => this._updateFilterArrows());
   }
 
   _filteredItems() {

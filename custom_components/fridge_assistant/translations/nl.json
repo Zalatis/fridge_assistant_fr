@@ -25,7 +25,8 @@
           "notify_time": "Tijd dagelijkse controle",
           "printer_enabled": "Labelprinter inschakelen",
           "printer_url": "URL van de Label Printer add-on",
-          "label_copies": "Aantal kopieën per print"
+          "label_copies": "Aantal kopieën per print",
+          "show_photos": "Productfoto's op itemkaarten tonen"
         },
         "data_description": {
           "ai_agent": "Welke conversation-agent voor schattingen. Leeg = de standaard Assist-agent.",

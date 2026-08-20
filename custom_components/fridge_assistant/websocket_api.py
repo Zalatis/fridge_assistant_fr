@@ -28,6 +28,7 @@ from .const import (
     CONF_OPENAI_KEY,
     CONF_PRINTER_ENABLED,
     CONF_PRINTER_URL,
+    CONF_SHOW_PHOTOS,
     DEFAULT_PRINTER_URL,
     CONF_WARN_DAYS,
     DOMAIN,
@@ -207,6 +208,7 @@ def _serialize_state(hass: HomeAssistant, runtime: FridgeRuntime) -> dict[str, A
             "printer_url": (opts.get(CONF_PRINTER_URL)
                             or DEFAULT_PRINTER_URL).strip().rstrip("/"),
             "label_copies": int(opts.get(CONF_LABEL_COPIES) or 1),
+            "show_photos": bool(opts.get(CONF_SHOW_PHOTOS)),
         },
         # No hardcoded "printer" hardware block anymore: what is actually
         # connected/loaded is live data, served by ws get_printers.

@@ -178,6 +178,7 @@ CONF_NOTIFY_ENABLED: Final = "notify_enabled"
 CONF_PRINTER_ENABLED: Final = "printer_enabled"
 CONF_PRINTER_URL: Final = "printer_url"
 CONF_LABEL_COPIES: Final = "label_copies"
+CONF_SHOW_PHOTOS: Final = "show_photos"
 
 CODE_FORMAT_LETTERS: Final = "letters_first"  # AB12
 CODE_FORMAT_DIGITS: Final = "digits_first"  # 12AB
@@ -193,6 +194,7 @@ DEFAULT_PRINTER_ENABLED: Final = False
 # The local add-on is reachable on the Supervisor network by its hostname.
 DEFAULT_PRINTER_URL: Final = "http://local-label-printer:8000"
 DEFAULT_LABEL_COPIES: Final = 1
+DEFAULT_SHOW_PHOTOS: Final = False
 
 # Label / printer hardware — validated combination.
 # NOTE: tested only with a DYMO LabelWriter 550 and 99014 labels (54 x 101 mm).
