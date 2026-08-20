@@ -1,0 +1,205 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Assistant réfrigérateur",
+        "description": "Ajoutez Assistant réfrigérateur pour suivre le contenu de votre réfrigérateur, congélateur et garde-manger."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Assistant réfrigérateur est déjà configuré."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Paramètres d’Assistant réfrigérateur",
+        "data": {
+          "warn_days": "Avertir ce nombre de jours avant la date limite",
+          "ai_enabled": "Activer les estimations par IA",
+          "ai_agent": "Agent conversationnel IA (vide = valeur par défaut)",
+          "openai_api_key": "Clé API OpenAI (facultatif)",
+          "openai_model": "Modèle OpenAI",
+          "code_format": "Format du code produit",
+          "notify_enabled": "Activer les notifications",
+          "notify_time": "Heure du contrôle quotidien",
+          "printer_enabled": "Activer l’imprimante d’étiquettes",
+          "printer_url": "URL de l’extension d’impression d’étiquettes",
+          "label_copies": "Nombre d’exemplaires par impression"
+        },
+        "data_description": {
+          "ai_agent": "Agent conversationnel à utiliser pour les estimations. Laissez ce champ vide pour utiliser l’agent Assist par défaut.",
+          "openai_api_key": "Si cette clé est définie, les estimations utilisent directement OpenAI au lieu de l’agent conversationnel.",
+          "printer_url": "Adresse de l’extension facultative d’impression d’étiquettes. La valeur par défaut fonctionne lorsque l’extension incluse est installée."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "items_total": {
+        "name": "Nombre total d’articles"
+      },
+      "expiring_soon": {
+        "name": "Expire bientôt"
+      },
+      "expired": {
+        "name": "Expirés"
+      }
+    }
+  },
+  "selector": {
+    "item_location": {
+      "options": {
+        "fridge": "Réfrigérateur",
+        "freezer": "Congélateur",
+        "pantry": "Garde-manger"
+      }
+    },
+    "complete_action": {
+      "options": {
+        "eaten": "Consommé",
+        "tossed": "Jeté"
+      }
+    },
+    "warn_days": {
+      "unit_of_measurement": {
+        "days": "jours"
+      }
+    },
+    "code_format": {
+      "options": {
+        "letters_first": "Lettres en premier (AB12)",
+        "digits_first": "Chiffres en premier (12AB)"
+      }
+    }
+  },
+  "services": {
+    "add_item": {
+      "name": "Ajouter un article",
+      "description": "Ajouter un produit à l’inventaire. La durée de conservation est estimée automatiquement en fonction du contenu et de l’emplacement.",
+      "fields": {
+        "name": {
+          "name": "Nom",
+          "description": "Nom affiché de l’article."
+        },
+        "contents": {
+          "name": "Contenu",
+          "description": "Que contient-il ? Utilisé pour identifier un modèle."
+        },
+        "location": {
+          "name": "Emplacement",
+          "description": "Où est-il stocké ?"
+        },
+        "added_date": {
+          "name": "Date d’ajout",
+          "description": "Date ISO (AAAA-MM-JJ). La date du jour est utilisée par défaut."
+        },
+        "expiry_date": {
+          "name": "Date limite de consommation",
+          "description": "Date ISO (AAAA-MM-JJ). Laissez vide pour estimer automatiquement."
+        },
+        "quantity": {
+          "name": "Quantité"
+        },
+        "portions": {
+          "name": "Portions",
+          "description": "Nombre de portions composant ce lot. Chaque portion reçoit son propre code autocollant (AB12-1, AB12-2, …)."
+        }
+      }
+    },
+    "update_item": {
+      "name": "Modifier un article",
+      "description": "Modifier les champs d’un article existant.",
+      "fields": {
+        "id": {
+          "name": "ID de l’article",
+          "description": "Identifiant interne de l’article."
+        }
+      }
+    },
+    "remove_item": {
+      "name": "Supprimer un article",
+      "description": "Supprimer un article de l’inventaire.",
+      "fields": {
+        "id": {
+          "name": "ID de l’article"
+        }
+      }
+    },
+    "complete_item": {
+      "name": "Clôturer un article",
+      "description": "Marquer un article comme consommé ou jeté. Il est déplacé vers l’historique, avec l’auteur et la date.",
+      "fields": {
+        "id": {
+          "name": "ID de l’article",
+          "description": "Identifiant interne de l’article."
+        },
+        "action": {
+          "name": "Action"
+        }
+      }
+    },
+    "eat_portion": {
+      "name": "Consommer une portion",
+      "description": "Marquer une portion d’un article comme consommée ou jetée. La dernière portion clôture automatiquement l’article entier.",
+      "fields": {
+        "id": {
+          "name": "ID de l’article",
+          "description": "Identifiant interne de l’article. Alternative au code."
+        },
+        "code": {
+          "name": "Code",
+          "description": "Code imprimé sur l’autocollant ; un sous-code comme AB12-2 sélectionne cette portion."
+        },
+        "portion": {
+          "name": "Portion",
+          "description": "Numéro de la portion. Vide = prochaine portion disponible."
+        },
+        "action": {
+          "name": "Action"
+        }
+      }
+    },
+    "remove_expired": {
+      "name": "Supprimer tous les articles expirés",
+      "description": "Supprimer en une seule fois tous les articles dont la date limite est dépassée (mode nettoyage)."
+    },
+    "estimate": {
+      "name": "Estimation de la durée de conservation par IA",
+      "description": "Demander à l’IA d’estimer la durée de conservation d’un produit (réfrigérateur/congélateur/garde-manger).",
+      "fields": {
+        "name": {
+          "name": "Produit",
+          "description": "Nom du produit ou du plat."
+        }
+      }
+    },
+    "add_template": {
+      "name": "Ajouter un modèle",
+      "description": "Ajouter votre propre modèle avec des durées de conservation à la base de données.",
+      "fields": {
+        "name": {
+          "name": "Nom"
+        }
+      }
+    },
+    "print_sticker": {
+      "name": "Imprimer un autocollant",
+      "description": "Imprimer — en phase 2 via l’extension facultative — un autocollant avec le code de l’article.",
+      "fields": {
+        "id": {
+          "name": "ID de l’article"
+        },
+        "printer": {
+          "name": "Imprimante",
+          "description": "File d’impression de l’extension à utiliser (par exemple « dymo » ou « zebra »). Laissez vide pour utiliser l’imprimante par défaut de l’extension."
+        }
+      }
+    },
+    "run_check": {
+      "name": "Lancer le contrôle des dates limites",
+      "description": "Lancer maintenant le contrôle des articles arrivant bientôt à expiration (événement et notification)."
+    }
+  }
+}

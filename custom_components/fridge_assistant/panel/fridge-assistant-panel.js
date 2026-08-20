@@ -5,9 +5,8 @@
  * ES module via panel_custom's module_url — no build step involved; the
  * views/lib/strings/styles files are plain sibling modules.
  *
- * i18n: everything follows a simple rule — Dutch if Home Assistant's
- * (per-user) language is Dutch, English for anything else. See `_lang()`/
- * `t()` below. Only nl/en exist; there is no third language.
+ * i18n: Dutch for Dutch, French for French, English for anything else.
+ * See `_lang()`/`t()` below. Supported languages: nl, fr and en.
  */
 
 import { CATEGORY_LABELS, KIND_LABELS, LOCATION_LABELS, STATUS_COLOR, STRINGS } from "./strings.js";
@@ -38,14 +37,11 @@ class FridgeAssistantPanel extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     if (!this._shellBuilt) this._init();
-    // After repeated failures the error card's retry button takes over, so
-    // a broken backend isn't hammered on every single hass update.
     if (!this._unsub && hass && (this._subFails || 0) < 3) this._subscribe();
     if (this._shellBuilt) this._applyChrome();
   }
   get hass() { return this._hass; }
 
-  // HA sets these properties on the panel element; `narrow` drives mobile layout.
   set narrow(v) { this._narrow = v; if (this._shellBuilt) this._applyChrome(); }
   get narrow() { return this._narrow; }
   set route(v) { this._route = v; }
@@ -56,38 +52,42 @@ class FridgeAssistantPanel extends HTMLElement {
   connectedCallback() {
     if (!this._shellBuilt && this._hass) this._init();
   }
+
   disconnectedCallback() {
-    if (this._unsub) { try { this._unsub(); } catch (e) {} this._unsub = null; }
+    if (this._unsub) {
+      try { this._unsub(); } catch (e) {}
+      this._unsub = null;
+    }
   }
 
   /* ------------------------------------------------------------------ i18n */
-  // "nl" only if Home Assistant's (per-user) language is Dutch; English for
-  // everything else, including no language at all. Mirrors the backend's
-  // resolve_language() so printed labels/notifications match the panel.
   _lang() {
     const raw = (this._hass && this._hass.language) || "en";
-    return String(raw).split("-")[0].toLowerCase() === "nl" ? "nl" : "en";
+    const code = String(raw).split("-")[0].toLowerCase();
+    if (code === "nl") return "nl";
+    if (code === "fr") return "fr";
+    return "en";
   }
 
   t(key, ...args) {
     const table = STRINGS[this._lang()] || STRINGS.en;
-    const v = (key in table ? table[key] : STRINGS.en[key]);
+    const v = key in table ? table[key] : STRINGS.en[key];
+    if (v == null) return key;
     return typeof v === "function" ? v(...args) : v;
   }
 
-  // Backend sends location_meta/categories/kinds with Dutch labels (plus
-  // emoji/icon, which aren't translated); these merge in the frontend label
-  // for the active language while keeping the rest of the backend object.
   _locMeta(key) {
     const base = (this._state && this._state.location_meta || {})[key] || {};
     const table = LOCATION_LABELS[this._lang()] || LOCATION_LABELS.en;
     return { ...base, label: table[key] || base.label || key };
   }
+
   _catMeta(key) {
     const base = (this._state && this._state.categories || {})[key] || {};
     const table = CATEGORY_LABELS[this._lang()] || CATEGORY_LABELS.en;
     return { ...base, label: table[key] || base.label || key };
   }
+
   _kindMeta(key) {
     const base = (this._state && this._state.kinds || {})[key] || {};
     const table = (KIND_LABELS[this._lang()] || KIND_LABELS.en)[key] || {};
@@ -96,16 +96,16 @@ class FridgeAssistantPanel extends HTMLElement {
   }
 
   async _subscribe() {
-    // `set hass` fires on every state change; without a synchronous guard,
-    // every call during the subscribe round-trip starts ANOTHER subscription
-    // (only the last unsub is kept), and each leaked one re-renders the
-    // panel on every push for the rest of the session.
     if (this._subscribing) return;
     this._subscribing = true;
     try {
       this._unsub = await this._hass.connection.subscribeMessage(
-        (state) => { this._state = state; this._subFails = 0; this._onState(); },
-        { type: "fridge_assistant/subscribe" }
+        (state) => {
+          this._state = state;
+          this._subFails = 0;
+          this._onState();
+        },
+        { type: "fridge_assistant/subscribe" },
       );
     } catch (e) {
       this._unsub = null;
@@ -116,8 +116,6 @@ class FridgeAssistantPanel extends HTMLElement {
     }
   }
 
-  /* After repeated subscribe failures: an explicit error card with a retry
-     button, instead of "Laden…" forever. */
   _renderSubscribeError() {
     const list = this.shadowRoot && this.shadowRoot.getElementById("list");
     if (!list || this._state) return;
@@ -138,12 +136,10 @@ class FridgeAssistantPanel extends HTMLElement {
     return this._hass.callWS({ type: `fridge_assistant/${type}`, ...payload });
   }
 
-  _kindOf(t) {
-    return (t && t.kind) || (this._state.category_kind || {})[t && t.category] || "ingredient";
+  _kindOf(item) {
+    return (item && item.kind) || (this._state.category_kind || {})[item && item.category] || "ingredient";
   }
 
-  /* Avatar for the person who added an item: their photo if a linked person
-     entity has one, else coloured initials derived from the name. */
   _avatar(name, picture, size = 20) {
     const box = `width:${size}px;height:${size}px`;
     if (picture) return `<img class="avatar" style="${box}" src="${esc(picture)}" alt="" title="${esc(name || "")}">`;
@@ -154,9 +150,6 @@ class FridgeAssistantPanel extends HTMLElement {
     return `<span class="avatar avatar-i" style="${box};font-size:${Math.round(size * 0.42)}px;background:hsl(${hash % 360} 52% 52%)" title="${esc(name || "")}">${esc(initials)}</span>`;
   }
 
-  /* ------------------------------------------------------ view delegates */
-  /* The view modules are plain functions taking the panel instance; these
-     thin wrappers keep every internal `this._x()` call site working. */
   _openModal(html, opts) { return openModal(this, html, opts); }
   _wireDateField(inp, placeholder, lang) { return wireDateField(inp, placeholder, lang); }
   _toast(msg, opts) { return toast(this, msg, opts); }
@@ -178,11 +171,8 @@ class FridgeAssistantPanel extends HTMLElement {
   _openHistory() { return openHistory(this); }
   _printSticker(id, itemHint, opts) { return printSticker(this, id, itemHint, opts); }
 
-  /* ---------------------------------------------------------------- shell */
   _init() {
     this._shellBuilt = true;
-    // Rounded UI font (vendored woff2). @font-face doesn't apply inside a
-    // shadow root, so the declaration goes into the document head once.
     if (!document.getElementById("fa-doc-fonts")) {
       const st = document.createElement("style");
       st.id = "fa-doc-fonts";
@@ -225,17 +215,17 @@ class FridgeAssistantPanel extends HTMLElement {
     $("btn-history").addEventListener("click", () => this._openHistory());
     $("btn-templates").addEventListener("click", () => this._openTemplatesManager());
     $("btn-settings").addEventListener("click", () => {
-      // SPA navigation: a hard location change reloads the whole HA frontend.
       history.pushState(null, "", "/config/integrations/integration/fridge_assistant");
       window.dispatchEvent(new CustomEvent("location-changed"));
     });
-    $("search").addEventListener("input", (e) => { this._search = e.target.value; this._renderList(); });
+    $("search").addEventListener("input", (e) => {
+      this._search = e.target.value;
+      this._renderList();
+    });
     this._applyChrome();
     if (this._state) this._onState();
   }
 
-  /* Render the native HA hamburger so the sidebar is reachable on mobile
-     (a full-page custom panel has no HA header of its own). */
   _applyChrome() {
     const slot = this.shadowRoot && this.shadowRoot.getElementById("menu-slot");
     if (!slot) return;
@@ -253,7 +243,6 @@ class FridgeAssistantPanel extends HTMLElement {
     this._renderCounts();
     this._renderFilters();
     this._renderList();
-    // Keep an open inspector (drawer or sheet) in sync with the new state.
     if (this._refreshSurface) this._refreshSurface();
   }
 
@@ -270,14 +259,12 @@ class FridgeAssistantPanel extends HTMLElement {
   _renderFilters() {
     const { locations, counts, kinds } = this._state;
     const el = this.shadowRoot.getElementById("filters");
-    const locChip = (key, label, count) =>
-      `<button class="chip ${this._filterLoc === key ? "active" : ""}" data-loc="${key}">${label} <span class="chip-n">${count}</span></button>`;
+    const locChip = (key, label, count) => `<button class="chip ${this._filterLoc === key ? "active" : ""}" data-loc="${key}">${label} <span class="chip-n">${count}</span></button>`;
     let html = locChip("all", this.t("all"), counts.total);
     for (const loc of locations) {
       const m = this._locMeta(loc);
       html += locChip(loc, `${m.emoji || ""} ${m.label || loc}`, counts.by_location[loc] || 0);
     }
-
     const kindKeys = Object.keys(kinds || {});
     if (kindKeys.length) {
       const kindCounts = {};
@@ -285,46 +272,28 @@ class FridgeAssistantPanel extends HTMLElement {
         const k = this._kindOf(i);
         kindCounts[k] = (kindCounts[k] || 0) + 1;
       }
-      const kindChip = (key, label, count) =>
-        `<button class="chip ${this._filterKind === key ? "active" : ""}" data-kind="${key}">${label} <span class="chip-n">${count}</span></button>`;
-      html += `<span class="chip-sep"></span>`;
-      html += kindChip("all", this.t("all"), counts.total);
+      const kindChip = (key, label, count) => `<button class="chip ${this._filterKind === key ? "active" : ""}" data-kind="${key}">${label} <span class="chip-n">${count}</span></button>`;
+      html += `<span class="chip-sep"></span>${kindChip("all", this.t("all"), counts.total)}`;
       for (const k of kindKeys) {
         const km = this._kindMeta(k);
         html += kindChip(k, `${km.emoji || ""} ${km.short || km.label}`, kindCounts[k] || 0);
       }
     }
-
-    // Category chips: only categories that actually hold items (the full
-    // catalogue would flood the bar), plus the active one so an emptied
-    // filter can still be tapped back to "all".
     const catCounts = {};
-    for (const i of this._state.items) {
-      catCounts[i.category] = (catCounts[i.category] || 0) + 1;
-    }
-    const catKeys = Object.keys(this._state.categories || {})
-      .filter((k) => catCounts[k] || k === this._filterCat);
+    for (const i of this._state.items) catCounts[i.category] = (catCounts[i.category] || 0) + 1;
+    const catKeys = Object.keys(this._state.categories || {}).filter((k) => catCounts[k] || k === this._filterCat);
     if (catKeys.length) {
-      const catChip = (key, label, count) =>
-        `<button class="chip ${this._filterCat === key ? "active" : ""}" data-cat="${key}">${label} <span class="chip-n">${count}</span></button>`;
-      html += `<span class="chip-sep"></span>`;
-      html += catChip("all", this.t("all"), counts.total);
+      const catChip = (key, label, count) => `<button class="chip ${this._filterCat === key ? "active" : ""}" data-cat="${key}">${label} <span class="chip-n">${count}</span></button>`;
+      html += `<span class="chip-sep"></span>${catChip("all", this.t("all"), counts.total)}`;
       for (const k of catKeys) {
         const cm = this._catMeta(k);
         html += catChip(k, `${cm.emoji || ""} ${cm.label || k}`, catCounts[k] || 0);
       }
     }
-
     el.innerHTML = html;
-    el.querySelectorAll("[data-loc]").forEach((b) =>
-      b.addEventListener("click", () => { this._filterLoc = b.dataset.loc; this._renderFilters(); this._renderList(); })
-    );
-    el.querySelectorAll("[data-kind]").forEach((b) =>
-      b.addEventListener("click", () => { this._filterKind = b.dataset.kind; this._renderFilters(); this._renderList(); })
-    );
-    el.querySelectorAll("[data-cat]").forEach((b) =>
-      b.addEventListener("click", () => { this._filterCat = b.dataset.cat; this._renderFilters(); this._renderList(); })
-    );
+    el.querySelectorAll("[data-loc]").forEach((b) => b.addEventListener("click", () => { this._filterLoc = b.dataset.loc; this._renderFilters(); this._renderList(); }));
+    el.querySelectorAll("[data-kind]").forEach((b) => b.addEventListener("click", () => { this._filterKind = b.dataset.kind; this._renderFilters(); this._renderList(); }));
+    el.querySelectorAll("[data-cat]").forEach((b) => b.addEventListener("click", () => { this._filterCat = b.dataset.cat; this._renderFilters(); this._renderList(); }));
   }
 
   _filteredItems() {
@@ -333,11 +302,7 @@ class FridgeAssistantPanel extends HTMLElement {
     if (this._filterKind !== "all") items = items.filter((i) => this._kindOf(i) === this._filterKind);
     if (this._filterCat !== "all") items = items.filter((i) => i.category === this._filterCat);
     const q = this._search.trim().toLowerCase();
-    if (q) items = items.filter((i) =>
-      (i.name || "").toLowerCase().includes(q) ||
-      (i.contents || "").toLowerCase().includes(q) ||
-      (i.code || "").toLowerCase().includes(q)
-    );
+    if (q) items = items.filter((i) => (i.name || "").toLowerCase().includes(q) || (i.contents || "").toLowerCase().includes(q) || (i.code || "").toLowerCase().includes(q));
     return items;
   }
 
@@ -346,105 +311,42 @@ class FridgeAssistantPanel extends HTMLElement {
     const list = this.shadowRoot.getElementById("list");
     const items = this._filteredItems();
     const lang = this._lang();
-
     if (this._state.counts.total === 0) {
-      list.innerHTML = `<div class="empty">
-        <div class="empty-emoji">🧊</div>
-        <h2>${this.t("emptyTitle")}</h2>
-        <p>${this.t("emptySub")}</p>
-        <button class="btn primary" id="empty-add">${this.t("addItemBtn")}</button>
-      </div>`;
+      list.innerHTML = `<div class="empty"><div class="empty-emoji">🧊</div><h2>${this.t("emptyTitle")}</h2><p>${this.t("emptySub")}</p><button class="btn primary" id="empty-add">${this.t("addItemBtn")}</button></div>`;
       list.querySelector("#empty-add").addEventListener("click", () => this._openAddModal());
       return;
     }
-
     let html = "";
     if (!items.length) {
-      // The active chips may be scrolled out of view, so an empty result
-      // needs its own way out.
-      html += `<div class="empty small"><p>${this.t("nothingFound")}</p>
-        <button class="btn ghost" id="clear-filters">${this.t("showAll")}</button></div>`;
+      html = `<div class="empty small"><p>${this.t("nothingFound")}</p><button class="btn ghost" id="clear-filters">${this.t("showAll")}</button></div>`;
     } else {
-      // Urgency sections: full-width headers inside the cards grid, so the
-      // expiry sort stays readable in the two-column layout. They apply in
-      // every view (filters/search included); a single group needs no header.
-      const secOf = (i) =>
-        i.days_left == null ? "nodate"
-        : (i.status === "expired" || i.status === "soon") ? "first"
-        : i.days_left <= 7 ? "week" : "later";
-      const titles = {
-        first: this.t("useFirst"),
-        week: this.t("secThisWeek"),
-        later: this.t("secLater"),
-        nodate: this.t("secNoDate"),
-      };
-      const groups = ["first", "week", "later", "nodate"]
-        .map((k) => [k, items.filter((i) => secOf(i) === k)])
-        .filter(([, arr]) => arr.length);
+      const secOf = (i) => i.days_left == null ? "nodate" : (i.status === "expired" || i.status === "soon") ? "first" : i.days_left <= 7 ? "week" : "later";
+      const titles = { first: this.t("useFirst"), week: this.t("secThisWeek"), later: this.t("secLater"), nodate: this.t("secNoDate") };
+      const groups = ["first", "week", "later", "nodate"].map((k) => [k, items.filter((i) => secOf(i) === k)]).filter(([, arr]) => arr.length);
       const showHeads = groups.length > 1;
-      html += `<div class="cards">${groups.map(([k, arr]) =>
-        (showHeads ? `<div class="sec-head${k === "first" ? " urgent" : ""}">${titles[k]} <span class="sec-n">${arr.length}</span></div>` : "")
-        + arr.map((i) => this._itemCard(i, lang)).join("")
-      ).join("")}</div>`;
+      html = `<div class="cards">${groups.map(([k, arr]) => (showHeads ? `<div class="sec-head${k === "first" ? " urgent" : ""}">${titles[k]} <span class="sec-n">${arr.length}</span></div>` : "") + arr.map((i) => this._itemCard(i, lang)).join("")).join("")}</div>`;
     }
     list.innerHTML = html;
-
     const clearBtn = list.querySelector("#clear-filters");
-    if (clearBtn) clearBtn.addEventListener("click", () => {
-      this._filterLoc = this._filterKind = this._filterCat = "all";
-      this._search = "";
-      const s = this.shadowRoot.getElementById("search");
-      if (s) s.value = "";
-      this._renderFilters();
-      this._renderList();
-    });
+    if (clearBtn) clearBtn.addEventListener("click", () => { this._filterLoc = this._filterKind = this._filterCat = "all"; this._search = ""; const s = this.shadowRoot.getElementById("search"); if (s) s.value = ""; this._renderFilters(); this._renderList(); });
     list.querySelectorAll("[data-item]").forEach((el) => {
-      const open = (e) => {
-        if (e.target.closest(".card-print")) return;
-        const item = this._state.items.find((x) => x.id === el.dataset.item);
-        if (item) this._openItemModal(item);
-      };
+      const open = (e) => { if (e.target.closest(".card-print")) return; const item = this._state.items.find((x) => x.id === el.dataset.item); if (item) this._openItemModal(item); };
       el.addEventListener("click", open);
-      // Cards are divs, so Enter/Space must be wired for keyboard users.
-      el.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); }
-      });
+      el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } });
     });
-    list.querySelectorAll(".card-print").forEach((b) =>
-      b.addEventListener("click", (e) => { e.stopPropagation(); this._printSticker(b.dataset.print); })
-    );
+    list.querySelectorAll(".card-print").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); this._printSticker(b.dataset.print); }));
   }
 
   _itemCard(i, lang) {
     const lm = this._locMeta(i.location);
-    // First word of the location label keeps the meta line short in both
-    // languages ("Buiten koelkast" -> "Buiten", "Fridge" -> "Fridge").
     const locShort = (lm.label || i.location || "").split(" ")[0];
     const contents = i.contents && i.contents !== i.name ? i.contents : "";
     const portions = i.portions || [];
     const total = portions.length;
     const open = portions.filter((p) => p.status === "open").length;
-    const pbadge = total > 1
-      ? `<span class="cs-sep">·</span><span class="pbadge" title="${esc(this.t("pbadgeTitle", open, total))}">${open}/${total}</span>`
-      : "";
+    const pbadge = total > 1 ? `<span class="cs-sep">·</span><span class="pbadge" title="${esc(this.t("pbadgeTitle", open, total))}">${open}/${total}</span>` : "";
     const selected = this._inspectorItemId === i.id ? " selected" : "";
-    return `<div class="card${selected}" data-item="${i.id}" role="button" tabindex="0" aria-label="${esc(i.name)}">
-      <div class="card-emoji">${i.emoji || "🍽️"}</div>
-      <div class="card-main">
-        <div class="card-title">${esc(i.name)}</div>
-        <div class="card-sub">
-          <span class="cs-fix">${lm.emoji || ""} ${esc(locShort)}</span>
-          <span class="cs-sep">·</span>
-          <span class="code">${esc(i.code)}</span>${pbadge}
-          ${contents ? `<span class="cs-sep">·</span><span class="cs-more">${esc(contents)}</span>` : ""}
-        </div>
-      </div>
-      <div class="card-right">
-        <div class="status" style="--c:${STATUS_COLOR[i.status]}">${daysLabel(i.days_left, lang)}</div>
-        <div class="card-when">${i.added_by_name ? `<span class="who" title="${esc(i.added_by_name)}">${this._avatar(i.added_by_name, i.added_by_picture, 15)}</span>` : ""}${i.expiry_date ? `<span>${fmtDate(i.expiry_date, lang)}</span>` : ""}</div>
-      </div>
-      <button class="card-print icon-btn" data-print="${i.id}" title="${this.t("printSticker")}" aria-label="${this.t("printSticker")}"><ha-icon icon="mdi:tag-outline"></ha-icon></button>
-    </div>`;
+    return `<div class="card${selected}" data-item="${i.id}" role="button" tabindex="0" aria-label="${esc(i.name)}"><div class="card-emoji">${i.emoji || "🍽️"}</div><div class="card-main"><div class="card-title">${esc(i.name)}</div><div class="card-sub"><span class="cs-fix">${lm.emoji || ""} ${esc(locShort)}</span><span class="cs-sep">·</span><span class="code">${esc(i.code)}</span>${pbadge}${contents ? `<span class="cs-sep">·</span><span class="cs-more">${esc(contents)}</span>` : ""}</div></div><div class="card-right"><div class="status" style="--c:${STATUS_COLOR[i.status]}">${daysLabel(i.days_left, lang)}</div><div class="card-when">${i.added_by_name ? `<span class="who" title="${esc(i.added_by_name)}">${this._avatar(i.added_by_name, i.added_by_picture, 15)}</span>` : ""}${i.expiry_date ? `<span>${fmtDate(i.expiry_date, lang)}</span>` : ""}</div></div><button class="card-print icon-btn" data-print="${i.id}" title="${this.t("printSticker")}" aria-label="${this.t("printSticker")}"><ha-icon icon="mdi:tag-outline"></ha-icon></button></div>`;
   }
 }
 
