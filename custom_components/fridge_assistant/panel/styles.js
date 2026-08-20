@@ -144,7 +144,7 @@ ha-icon{--mdc-icon-size:18px;vertical-align:-4px;}
 .card{display:flex;align-items:center;gap:12px;background:var(--fa-card);
   border:1px solid var(--fa-line);border-radius:20px;padding:12px;cursor:pointer;
   position:relative;box-shadow:var(--fa-shadow-s);
-  transition:transform .18s var(--fa-ease),box-shadow .18s var(--fa-ease);}
+  transition:transform .18s var(--fa-ease),box-shadow .18s var(--fa-ease);width:auto;min-width:0;}
 .card:hover{transform:translateY(-2px);box-shadow:var(--fa-shadow-m);}
 .card:active{transform:scale(.985);}
 .card:focus-visible{outline:2px solid var(--fa-accent);outline-offset:2px;}
