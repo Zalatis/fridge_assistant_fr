@@ -100,6 +100,28 @@ class FridgeAssistantPanel extends HTMLElement {
     return templateDisplayName(tpl, this._lang());
   }
 
+  _itemThumb(item, cls = "card-emoji") {
+    const emoji = item.emoji || "🍽️";
+    const showPhotos = !!(this._state && this._state.options && this._state.options.show_photos);
+    const photo = (item.photo || "").trim();
+    if (showPhotos && photo) {
+      return `<div class="${cls} has-photo" data-fallback="${esc(emoji)}"><img src="${esc(photo)}" alt="" loading="lazy" referrerpolicy="no-referrer"></div>`;
+    }
+    return `<div class="${cls}">${emoji}</div>`;
+  }
+
+  _wirePhotoFallback(root) {
+    if (!root) return;
+    root.querySelectorAll(".has-photo img").forEach((img) => {
+      img.addEventListener("error", () => {
+        const wrap = img.parentElement;
+        if (!wrap) return;
+        wrap.classList.remove("has-photo");
+        wrap.textContent = wrap.dataset.fallback || "🍽️";
+      }, { once: true });
+    });
+  }
+
   async _subscribe() {
     if (this._subscribing) return;
     this._subscribing = true;
@@ -395,6 +417,7 @@ class FridgeAssistantPanel extends HTMLElement {
       el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } });
     });
     list.querySelectorAll(".card-print").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); this._printSticker(b.dataset.print); }));
+    this._wirePhotoFallback(list);
   }
 
   _itemCard(i, lang) {
@@ -406,7 +429,7 @@ class FridgeAssistantPanel extends HTMLElement {
     const open = portions.filter((p) => p.status === "open").length;
     const pbadge = total > 1 ? `<span class="cs-sep">·</span><span class="pbadge" title="${esc(this.t("pbadgeTitle", open, total))}">${open}/${total}</span>` : "";
     const selected = this._inspectorItemId === i.id ? " selected" : "";
-    return `<div class="card${selected}" data-item="${i.id}" role="button" tabindex="0" aria-label="${esc(i.name)}"><div class="card-emoji">${i.emoji || "🍽️"}</div><div class="card-main"><div class="card-title">${esc(i.name)}</div><div class="card-sub"><span class="cs-fix">${lm.emoji || ""} ${esc(locShort)}</span><span class="cs-sep">·</span><span class="code">${esc(i.code)}</span>${pbadge}${contents ? `<span class="cs-sep">·</span><span class="cs-more">${esc(contents)}</span>` : ""}</div></div><div class="card-right"><div class="status" style="--c:${STATUS_COLOR[i.status]}">${daysLabel(i.days_left, lang)}</div><div class="card-when">${i.added_by_name ? `<span class="who" title="${esc(i.added_by_name)}">${this._avatar(i.added_by_name, i.added_by_picture, 15)}</span>` : ""}${i.expiry_date ? `<span>${fmtDate(i.expiry_date, lang)}</span>` : ""}</div></div><button class="card-print icon-btn" data-print="${i.id}" title="${this.t("printSticker")}" aria-label="${this.t("printSticker")}"><ha-icon icon="mdi:tag-outline"></ha-icon></button></div>`;
+    return `<div class="card${selected}" data-item="${i.id}" role="button" tabindex="0" aria-label="${esc(i.name)}">${this._itemThumb(i)}<div class="card-main"><div class="card-title">${esc(i.name)}</div><div class="card-sub"><span class="cs-fix">${lm.emoji || ""} ${esc(locShort)}</span><span class="cs-sep">·</span><span class="code">${esc(i.code)}</span>${pbadge}${contents ? `<span class="cs-sep">·</span><span class="cs-more">${esc(contents)}</span>` : ""}</div></div><div class="card-right"><div class="status" style="--c:${STATUS_COLOR[i.status]}">${daysLabel(i.days_left, lang)}</div><div class="card-when">${i.added_by_name ? `<span class="who" title="${esc(i.added_by_name)}">${this._avatar(i.added_by_name, i.added_by_picture, 15)}</span>` : ""}${i.expiry_date ? `<span>${fmtDate(i.expiry_date, lang)}</span>` : ""}</div></div><button class="card-print icon-btn" data-print="${i.id}" title="${this.t("printSticker")}" aria-label="${this.t("printSticker")}"><ha-icon icon="mdi:tag-outline"></ha-icon></button></div>`;
   }
 }
 

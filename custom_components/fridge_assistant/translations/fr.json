@@ -25,7 +25,8 @@
           "notify_time": "Heure du contrôle quotidien",
           "printer_enabled": "Activer l’imprimante d’étiquettes",
           "printer_url": "URL de l’extension d’impression d’étiquettes",
-          "label_copies": "Nombre d’exemplaires par impression"
+          "label_copies": "Nombre d’exemplaires par impression",
+          "show_photos": "Afficher les photos produit sur les cartes d’articles"
         },
         "data_description": {
           "ai_agent": "Agent conversationnel à utiliser pour les estimations. Laissez ce champ vide pour utiliser l’agent Assist par défaut.",
