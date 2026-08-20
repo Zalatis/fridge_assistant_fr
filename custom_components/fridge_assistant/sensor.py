@@ -40,7 +40,11 @@ class _FridgeSensorBase(SensorEntity):
             identifiers={(DOMAIN, runtime.entry.entry_id)},
             name="Fridge Assistant",
             manufacturer="Fridge Assistant",
-            model="Inventaris" if resolve_language(runtime.hass) == "nl" else "Inventory",
+            model={
+                "nl": "Inventaris",
+                "fr": "Inventaire",
+                "en": "Inventory",
+            }.get(resolve_language(runtime.hass), "Inventory"),
         )
 
     async def async_added_to_hass(self) -> None:

@@ -213,9 +213,9 @@ The panel is built to be used one-handed with your phone in hand, standing at th
 ## Language
 
 Fridge Assistant follows a simple rule everywhere — panel, printed labels, AI prompts, and the daily
-expiry notification: **Dutch if Home Assistant's language is Dutch, English for anything else.**
-There's no third language and no silent fallback to Dutch for an unconfigured or unrecognized
-language — only nl/en text ships, and everything else resolves to English.
+expiry notification: **Dutch if Home Assistant's language is Dutch, French if it's French, English for anything else.**
+There's no silent fallback to Dutch for an unconfigured or unrecognized
+language — nl/fr/en text ships, and everything else resolves to English.
 
 The panel reads the current user's Home Assistant frontend language (so two people in the same
 household can each see their own language); server-rendered text (printed labels, the daily
@@ -320,7 +320,7 @@ URL if yours differs — an add-on installed from the repository gets a hostname
 
 ## Known limitations
 
-- Only Dutch and English exist (see [Language](#language)) — the 99-recipe database's product names
+- Only Dutch, French and English exist for the UI (see [Language](#language)) — the 99-recipe database's product names
   and notes stay Dutch regardless of the UI language.
 - Live camera barcode scanning requires a secure context (HTTPS); it degrades gracefully to
   photo-capture or manual entry otherwise.
@@ -346,7 +346,7 @@ custom_components/fridge_assistant/
 ├── printer.py                          # renders + posts labels to the add-on
 ├── panel/                    # the mobile-first custom panel — native ES modules, no build step
 │   ├── fridge-assistant-panel.js  # entry: custom element, shell, list, filters
-│   ├── strings.js                 # all nl/en UI strings + label maps
+│   ├── strings.js                 # all nl/fr/en UI strings + label maps
 │   ├── styles.js                  # all CSS (injected into the shadow root)
 │   ├── lib/                       # format helpers + modal/drawer/toast surfaces
 │   ├── views/                     # one module per view (inspector, add, scanner, …)

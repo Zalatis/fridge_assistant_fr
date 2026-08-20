@@ -30,17 +30,38 @@ export function fmtDate(iso, lang) {
   if (!dt) return "—";
   return `${dt.getUTCDate()} ${MONTHS[lang][dt.getUTCMonth()]}`;
 }
+
+const DAYS = {
+  nl: {
+    noDate: "geen datum",
+    today: "vandaag!",
+    oneDay: "nog 1 dag",
+    daysLeft: (n) => `nog ${n} dagen`,
+    past: (abs) => `${abs} dag${abs === 1 ? "" : "en"} over datum`,
+  },
+  fr: {
+    noDate: "pas de date",
+    today: "aujourd’hui !",
+    oneDay: "encore 1 jour",
+    daysLeft: (n) => `encore ${n} jours`,
+    past: (abs) => `${abs} jour${abs === 1 ? "" : "s"} après la date`,
+  },
+  en: {
+    noDate: "no date",
+    today: "today!",
+    oneDay: "1 day left",
+    daysLeft: (n) => `${n} days left`,
+    past: (abs) => `${abs} day${abs === 1 ? "" : "s"} past date`,
+  },
+};
+
 export function daysLabel(daysLeft, lang) {
-  if (daysLeft === null || daysLeft === undefined) return lang === "nl" ? "geen datum" : "no date";
-  if (daysLeft < 0) {
-    const abs = Math.abs(daysLeft);
-    return lang === "nl"
-      ? `${abs} dag${abs === 1 ? "" : "en"} over datum`
-      : `${abs} day${abs === 1 ? "" : "s"} past date`;
-  }
-  if (daysLeft === 0) return lang === "nl" ? "vandaag!" : "today!";
-  if (daysLeft === 1) return lang === "nl" ? "nog 1 dag" : "1 day left";
-  return lang === "nl" ? `nog ${daysLeft} dagen` : `${daysLeft} days left`;
+  const s = DAYS[lang] || DAYS.en;
+  if (daysLeft === null || daysLeft === undefined) return s.noDate;
+  if (daysLeft < 0) return s.past(Math.abs(daysLeft));
+  if (daysLeft === 0) return s.today;
+  if (daysLeft === 1) return s.oneDay;
+  return s.daysLeft(daysLeft);
 }
 export function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

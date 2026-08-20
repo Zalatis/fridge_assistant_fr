@@ -45,9 +45,10 @@ from .store import item_age_days, item_days_left, parse_date
 
 _LOGGER = logging.getLogger(__name__)
 
-# Follows resolve_language() — same nl-if-Dutch-else-English rule as everywhere else.
+# Follows resolve_language() — nl, fr, or en.
 _STRINGS: dict[str, dict[str, str]] = {
     "nl": {"ai_disabled": "AI-schattingen staan uit in de instellingen."},
+    "fr": {"ai_disabled": "Les estimations par IA sont désactivées dans les paramètres."},
     "en": {"ai_disabled": "AI estimates are turned off in the settings."},
 }
 

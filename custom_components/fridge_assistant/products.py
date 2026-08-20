@@ -20,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 
 OFF_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
 _FIELDS = (
-    "product_name,product_name_nl,brands,quantity,"
+    "product_name,product_name_nl,product_name_fr,brands,quantity,"
     "categories_tags,image_front_small_url"
 )
 
@@ -78,11 +78,14 @@ async def async_lookup_barcode(
     product = data["product"]
     generic_name = product.get("product_name")
     dutch_name = product.get("product_name_nl")
-    first, second = (
-        (dutch_name, generic_name)
-        if resolve_language(hass) == "nl"
-        else (generic_name, dutch_name)
-    )
+    french_name = product.get("product_name_fr")
+    lang = resolve_language(hass)
+    if lang == "nl":
+        first, second = dutch_name, generic_name
+    elif lang == "fr":
+        first, second = french_name, generic_name
+    else:
+        first, second = generic_name, french_name or dutch_name
     name = (first or second or product.get("brands") or "").strip()
     if not name:
         return None

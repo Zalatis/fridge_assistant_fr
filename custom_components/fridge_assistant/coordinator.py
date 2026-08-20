@@ -292,8 +292,8 @@ class FridgeRuntime:
         return items
 
 
-# Small nl/en string set for the daily persistent notification. Follows
-# resolve_language() — same nl-if-Dutch-else-English rule as everywhere else.
+# Small nl/fr/en string set for the daily persistent notification. Follows
+# resolve_language().
 _NOTIFY_STRINGS: dict[str, dict[str, str]] = {
     "nl": {
         "title": "🧊 Koelkast — let op de houdbaarheid",
@@ -303,6 +303,15 @@ _NOTIFY_STRINGS: dict[str, dict[str, str]] = {
         "today": " — vandaag!",
         "expired_suffix": " — {n} dag(en) over datum",
         "soon_suffix": " — nog {n} dag(en)",
+    },
+    "fr": {
+        "title": "🧊 Réfrigérateur — vérifiez les dates limites",
+        "expired_heading": "**Date dépassée :**",
+        "soon_heading": "**Expire bientôt :**",
+        "all_good": "Tout est encore bon. 👍",
+        "today": " — aujourd’hui !",
+        "expired_suffix": " — {n} jour(s) après la date",
+        "soon_suffix": " — encore {n} jour(s)",
     },
     "en": {
         "title": "🧊 Fridge — check what's expiring",

@@ -12,8 +12,12 @@ class TestResolveLanguage(unittest.TestCase):
         for lang in ("nl", "nl-NL", "NL", "nl-BE"):
             self.assertEqual(const.resolve_language(fake_hass(lang)), "nl")
 
+    def test_french_variants_resolve_to_fr(self):
+        for lang in ("fr", "fr-FR", "FR", "fr-BE"):
+            self.assertEqual(const.resolve_language(fake_hass(lang)), "fr")
+
     def test_everything_else_falls_back_to_english(self):
-        for lang in ("en", "en-GB", "de", "fr", "", None):
+        for lang in ("en", "en-GB", "de", "", None):
             self.assertEqual(const.resolve_language(fake_hass(lang)), "en")
 
 
@@ -38,20 +42,23 @@ class TestLegacyMaps(unittest.TestCase):
     def test_every_location_and_category_has_meta(self):
         self.assertEqual(set(const.LOCATIONS), set(const.LOCATION_META))
         self.assertEqual(set(const.LOCATIONS), set(const.LOCATION_LABELS_EN))
+        self.assertEqual(set(const.LOCATIONS), set(const.LOCATION_LABELS_FR))
         self.assertEqual(set(const.CATEGORIES), set(const.CATEGORY_KIND))
 
 
 class TestLabels(unittest.TestCase):
-    def test_location_label_both_languages(self):
+    def test_location_label_all_languages(self):
         self.assertEqual(const.location_label("fridge", "nl"), "Koelkast")
         self.assertEqual(const.location_label("fridge", "en"), "Fridge")
+        self.assertEqual(const.location_label("fridge", "fr"), "Réfrigérateur")
         self.assertEqual(const.location_label("pantry", "nl"), "Buiten koelkast")
         # Unknown key falls back to the key itself instead of crashing.
         self.assertEqual(const.location_label("attic", "en"), "attic")
 
-    def test_kind_label_both_languages(self):
+    def test_kind_label_all_languages(self):
         self.assertEqual(const.kind_label("dish", "nl"), "Gerechten")
         self.assertEqual(const.kind_label("dish", "en"), "Dishes")
+        self.assertEqual(const.kind_label("dish", "fr"), "Plats")
         self.assertEqual(const.kind_label("ingredient", "en", short=False),
                          "Individual ingredients")
 

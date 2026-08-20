@@ -37,7 +37,7 @@ from .coordinator import FridgeRuntime, get_runtime
 
 _LOGGER = logging.getLogger(__name__)
 
-# Follows resolve_language() — same nl-if-Dutch-else-English rule as everywhere else.
+# Follows resolve_language() — nl, fr, or en.
 _STRINGS: dict[str, dict[str, str]] = {
     "nl": {
         "ai_disabled": "AI-schattingen staan uit in de instellingen.",
@@ -52,6 +52,20 @@ _STRINGS: dict[str, dict[str, str]] = {
         "sticker_body": "{msg}\n\nSticker voor **{name}** (`{code}`).",
         "path_not_allowed": "Pad {path} is niet toegestaan; gebruik een pad onder "
         "{allowed} of voeg het toe aan allowlist_external_dirs.",
+    },
+    "fr": {
+        "ai_disabled": "Les estimations par IA sont désactivées dans les paramètres.",
+        "printer_disabled": "L’imprimante est désactivée dans les paramètres de Fridge "
+        "Assistant.",
+        "printer_unreachable": "L’extension Label Printer est inaccessible. Est-elle en "
+        "cours d’exécution ?",
+        "printer_not_connected": "L’imprimante n’est pas connectée ou est éteinte. "
+        "Allumez-la et réessayez.",
+        "print_failed": "Échec de l’impression ({reason}).",
+        "sticker_title": "🖨️ Imprimer l’étiquette",
+        "sticker_body": "{msg}\n\nÉtiquette pour **{name}** (`{code}`).",
+        "path_not_allowed": "Le chemin {path} n’est pas autorisé ; utilisez un chemin sous "
+        "{allowed} ou ajoutez-le à allowlist_external_dirs.",
     },
     "en": {
         "ai_disabled": "AI estimates are turned off in the settings.",

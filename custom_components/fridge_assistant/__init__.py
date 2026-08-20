@@ -20,6 +20,7 @@ from .const import (
     PANEL_ICON,
     PANEL_TITLE,
     PANEL_TITLE_EN,
+    PANEL_TITLE_FR,
     PANEL_URL_PATH,
     PANEL_WEBCOMPONENT,
     SIGNAL_UPDATED,
@@ -139,7 +140,12 @@ async def _async_register_static(hass: HomeAssistant) -> None:
 async def _async_register_panel(hass: HomeAssistant) -> None:
     if PANEL_URL_PATH in hass.data.get(frontend.DATA_PANELS, {}):
         return
-    sidebar_title = PANEL_TITLE if resolve_language(hass) == "nl" else PANEL_TITLE_EN
+    sidebar_titles = {
+        "nl": PANEL_TITLE,
+        "fr": PANEL_TITLE_FR,
+        "en": PANEL_TITLE_EN,
+    }
+    sidebar_title = sidebar_titles.get(resolve_language(hass), PANEL_TITLE_EN)
     # The manifest is the single source for the version; a hand-maintained
     # constant drifted from it, silently breaking this cache-buster.
     version = (await async_get_integration(hass, DOMAIN)).version

@@ -44,6 +44,8 @@ WHITE = 255
 MONTHS = {
     "nl": ["", "jan", "feb", "mrt", "apr", "mei", "jun",
            "jul", "aug", "sep", "okt", "nov", "dec"],
+    "fr": ["", "janv.", "févr.", "mars", "avr.", "mai", "juin",
+           "juil.", "août", "sept.", "oct.", "nov.", "déc."],
     "en": ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 }
@@ -63,6 +65,21 @@ STRINGS = {
         "no_date": "geen datum",
         "brand": "FRIDGE ASSISTANT",
         "portion": "PORTIE {n}/{total}",
+    },
+    "fr": {
+        "code": "CODE ARTICLE",
+        "added": "AJOUTÉ LE",
+        "eat_before": "À CONSOMMER AVANT",
+        "contents": "CONTENU",
+        "servings": "QUANTITÉ",
+        "days_left": "encore {n} jours",
+        "one_day": "encore 1 jour",
+        "today": "à consommer aujourd’hui !",
+        "expired": "DATE DÉPASSÉE",
+        "expired_days": "{n} jours après la date",
+        "no_date": "pas de date",
+        "brand": "FRIDGE ASSISTANT",
+        "portion": "PORTION {n}/{total}",
     },
     "en": {
         "code": "ITEM CODE",

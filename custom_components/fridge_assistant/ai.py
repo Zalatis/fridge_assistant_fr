@@ -35,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 
-# Follows resolve_language() — same nl-if-Dutch-else-English rule as everywhere else.
+# Follows resolve_language() — nl, fr, or en.
 _STRINGS: dict[str, dict[str, str]] = {
     "nl": {
         "no_name": "Geen productnaam opgegeven.",
@@ -51,6 +51,21 @@ _STRINGS: dict[str, dict[str, str]] = {
         "Assistant.",
         "agent_failed": "Conversation-agent faalde: {err}",
         "no_agent_response": "Geen leesbaar antwoord van de agent.",
+    },
+    "fr": {
+        "no_name": "Aucun nom de produit fourni.",
+        "unreadable_json": "Impossible de lire la réponse de l’IA : {err}",
+        "no_json": "L’IA n’a pas renvoyé de JSON utilisable.",
+        "openai_error": "Erreur OpenAI ({status}) : {body}",
+        "openai_unreachable": "OpenAI inaccessible : {err}",
+        "unexpected_response": "Réponse OpenAI inattendue.",
+        "no_ai": "Aucune IA disponible. Configurez un agent conversationnel ou une clé "
+        "OpenAI dans les paramètres de Fridge Assistant.",
+        "no_agent": "Aucun agent IA adapté trouvé. Ajoutez un agent conversationnel LLM "
+        "(par ex. OpenAI) ou saisissez une clé OpenAI dans les paramètres de Fridge "
+        "Assistant.",
+        "agent_failed": "Échec de l’agent conversationnel : {err}",
+        "no_agent_response": "Aucune réponse lisible de l’agent.",
     },
     "en": {
         "no_name": "No product name given.",

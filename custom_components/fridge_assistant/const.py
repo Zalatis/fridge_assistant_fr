@@ -20,6 +20,7 @@ URL_BASE: Final = "/fridge_assistant_static"
 
 PANEL_URL_PATH: Final = "fridge-assistant"
 PANEL_TITLE: Final = "Koelkast"
+PANEL_TITLE_FR: Final = "Réfrigérateur"
 PANEL_TITLE_EN: Final = "Fridge"
 PANEL_ICON: Final = "mdi:fridge-outline"
 PANEL_WEBCOMPONENT: Final = "fridge-assistant-panel"
@@ -44,6 +45,11 @@ LOCATION_LABELS_EN: Final = {
     LOCATION_FRIDGE: "Fridge",
     LOCATION_FREEZER: "Freezer",
     LOCATION_PANTRY: "Pantry",
+}
+LOCATION_LABELS_FR: Final = {
+    LOCATION_FRIDGE: "Réfrigérateur",
+    LOCATION_FREEZER: "Congélateur",
+    LOCATION_PANTRY: "Garde-manger",
 }
 
 # Categories (keys must match seed_templates.json). The four meal-time
@@ -72,7 +78,7 @@ DEFAULT_EMOJI: Final = "🍽️"
 DEFAULT_ICON: Final = "mdi:food-variant"
 
 # Fallback item name when neither a name nor contents was given.
-UNKNOWN_ITEM_NAME: Final = {"nl": "Onbekend", "en": "Unknown"}
+UNKNOWN_ITEM_NAME: Final = {"nl": "Onbekend", "fr": "Inconnu", "en": "Unknown"}
 
 # Two top-level groups every template belongs to.
 KIND_INGREDIENT: Final = "ingredient"
@@ -91,6 +97,10 @@ KINDS: Final = {
 KIND_LABELS_EN: Final = {
     KIND_INGREDIENT: {"label": "Individual ingredients", "short": "Ingredients"},
     KIND_DISH: {"label": "Dishes", "short": "Dishes"},
+}
+KIND_LABELS_FR: Final = {
+    KIND_INGREDIENT: {"label": "Ingrédients individuels", "short": "Ingrédients"},
+    KIND_DISH: {"label": "Plats", "short": "Plats"},
 }
 # Which fine category rolls up into which big group (used as the default).
 CATEGORY_KIND: Final = {
@@ -224,32 +234,43 @@ SOURCE_NONE: Final = "none"
 
 
 def resolve_language(hass) -> str:
-    """"nl" if Home Assistant's language is Dutch, "en" for anything else.
+    """Return ``nl``, ``fr`` or ``en`` from Home Assistant's language.
 
-    Fridge Assistant only ships nl/en text, so any other configured HA
-    language (or none at all) falls back to English rather than Dutch.
+    Dutch and French map to their locale; any other configured HA language
+    (or none at all) falls back to English rather than Dutch.
     """
     raw = (getattr(hass.config, "language", None) or "").split("-")[0].lower()
-    return "nl" if raw == "nl" else "en"
+    if raw == "nl":
+        return "nl"
+    if raw == "fr":
+        return "fr"
+    return "en"
 
 
 def location_label(location: str, lang: str) -> str:
     """Server-rendered location label (printed labels, notifications)."""
     if lang == "en":
         return LOCATION_LABELS_EN.get(location, location)
+    if lang == "fr":
+        return LOCATION_LABELS_FR.get(location, location)
     return LOCATION_META.get(location, {}).get("label", location)
 
 
 def kind_label(kind: str, lang: str, *, short: bool = True) -> str:
     """Server-rendered kind label (printed labels)."""
-    table = KIND_LABELS_EN if lang == "en" else KINDS
+    if lang == "en":
+        table = KIND_LABELS_EN
+    elif lang == "fr":
+        table = KIND_LABELS_FR
+    else:
+        table = KINDS
     meta = table.get(kind, {})
     key = "short" if short else "label"
     return meta.get(key) or meta.get("label") or kind
 
 
 def localized(strings: dict[str, dict[str, str]], lang: str, key: str, **kwargs: Any) -> str:
-    """Format ``key`` from a per-file nl/en STRINGS dict for ``lang``."""
+    """Format ``key`` from a per-file nl/fr/en STRINGS dict for ``lang``."""
     return strings[lang][key].format(**kwargs)
 
 
@@ -265,6 +286,15 @@ _SHARED_STRINGS: dict[str, dict[str, str]] = {
         "portion_consumed": "Portie {n} is al opgegeten of weggegooid.",
         "no_open_portions": "Geen open porties meer.",
     },
+    "fr": {
+        "not_configured": "Fridge Assistant n’est plus configuré.",
+        "not_loaded": "Fridge Assistant n’est pas chargé.",
+        "item_not_found": "Article {id} introuvable.",
+        "cannot_restore": "Impossible de restaurer.",
+        "portion_not_found": "La portion {n} n’existe plus.",
+        "portion_consumed": "La portion {n} a déjà été consommée ou jetée.",
+        "no_open_portions": "Il ne reste aucune portion ouverte.",
+    },
     "en": {
         "not_configured": "Fridge Assistant is not configured (anymore).",
         "not_loaded": "Fridge Assistant not loaded.",
@@ -278,5 +308,5 @@ _SHARED_STRINGS: dict[str, dict[str, str]] = {
 
 
 def shared_text(hass, key: str, **kwargs: Any) -> str:
-    """nl/en text for an error shared by services.py and websocket_api.py."""
+    """nl/fr/en text for an error shared by services.py and websocket_api.py."""
     return localized(_SHARED_STRINGS, resolve_language(hass), key, **kwargs)
