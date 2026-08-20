@@ -158,6 +158,7 @@ ha-icon{--mdc-icon-size:18px;vertical-align:-4px;}
 .card-sub{display:flex;gap:6px;align-items:center;margin-top:3px;flex-wrap:nowrap;overflow:hidden;
   font-size:12px;color:var(--fa-muted);}
 .cs-fix,.cs-sep,.card-sub .code{flex:none;}
+.cs-sep{display:var(--display-cs-sep);}
 .cs-fix{display:var(--display-cs-fix);}
 .cs-more{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:var(--display-cs-more);}
 .tag{font-size:12px;color:var(--fa-muted);}
