@@ -30,7 +30,7 @@ export const STYLES = `
   overflow-x:hidden;-webkit-tap-highlight-color:transparent;
 }
 *{box-sizing:border-box;}
-.wrap{max-width:960px;margin:0 auto;padding:0 var(--fa-gr) calc(108px + env(safe-area-inset-bottom)) var(--fa-gl);overflow-x:hidden;}
+.wrap{max-width:1280px;margin:0 auto;padding:0 var(--fa-gr) calc(108px + env(safe-area-inset-bottom)) var(--fa-gl);overflow-x:hidden;}
 
 /* ------------------------------------------------------------ top chrome */
 /* Full-bleed glass bar; its inner padding equals the page gutter, so the
