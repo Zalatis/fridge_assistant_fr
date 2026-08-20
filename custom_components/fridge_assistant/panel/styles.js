@@ -157,11 +157,12 @@ ha-icon{--mdc-icon-size:18px;vertical-align:-4px;}
 .card-title{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .card-sub{display:flex;gap:6px;align-items:center;margin-top:3px;flex-wrap:nowrap;overflow:hidden;
   font-size:12px;color:var(--fa-muted);}
-.cs-fix,.cs-sep,.card-sub .code{flex:none;display:var(--display);}
-.cs-more{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:var(--display);}
+.cs-fix,.cs-sep,.card-sub .code{flex:none;}
+.cs-fix{display:var(--display-cs-fix);}
+.cs-more{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:var(--display-cs-more);}
 .tag{font-size:12px;color:var(--fa-muted);}
 .code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;background:var(--fa-soft);
-  border-radius:6px;padding:1px 6px;letter-spacing:.05em;display:var(--display);}
+  border-radius:6px;padding:1px 6px;letter-spacing:.05em;display:var(--display-code);}
 .muted{color:var(--fa-muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
 .card-right{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;}
 .who{display:inline-flex;align-items:center;gap:5px;}
@@ -174,8 +175,8 @@ ha-icon{--mdc-icon-size:18px;vertical-align:-4px;}
   background:color-mix(in srgb,var(--c) 12%,transparent);border-radius:999px;padding:4px 10px;}
 .status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c);flex:none;}
 .card-when{font-size:11px;color:var(--fa-muted);margin-top:4px;display:flex;align-items:center;
-  gap:5px;justify-content:flex-end;min-height:15px;display:var(--display);}
-.card-print{font-size:15px;flex:none;display:var(--display);}
+  gap:5px;justify-content:flex-end;min-height:15px;display:var(--display-card-when);}
+.card-print{font-size:15px;flex:none;display:var(--display-card-print);}
 .card.selected{border-color:var(--fa-accent);
   box-shadow:0 0 0 3px var(--fa-accent-soft),var(--fa-shadow-s);}
 /* Portion badge on a card: how many of the batch are still open. */
