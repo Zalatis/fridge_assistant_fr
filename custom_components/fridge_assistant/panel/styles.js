@@ -151,8 +151,8 @@ ha-icon{--mdc-icon-size:18px;vertical-align:-4px;}
 .card-emoji{font-size:25px;width:48px;height:48px;flex:none;display:flex;align-items:center;
   justify-content:center;background:color-mix(in srgb,var(--fa-accent) 7%,var(--fa-bg));
   border-radius:15px;}
-.card-emoji.has-photo,.d-emoji.has-photo{padding:0;overflow:hidden;font-size:0;}
-.card-emoji.has-photo img,.d-emoji.has-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.card-emoji.has-photo,.d-emoji.has-photo{padding:0;overflow:hidden;font-size:0;background:#ffffff}
+.card-emoji.has-photo img,.d-emoji.has-photo img{width:100%;height:100%;object-fit:contain;display:block;}
 .card-main{flex:1;min-width:0;}
 .card-title{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .card-sub{display:flex;gap:6px;align-items:center;margin-top:3px;flex-wrap:nowrap;overflow:hidden;
