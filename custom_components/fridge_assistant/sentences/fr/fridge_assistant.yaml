@@ -1,0 +1,24 @@
+language: "fr"
+intents:
+  FridgeAssistantListIngredients:
+    data:
+      - sentences:
+          - "Quels ingrédients ai-je dans le frigo"
+          - "Quels ingrédients ai-je dans le réfrigérateur"
+          - "Liste les ingrédients du frigo"
+          - "Qu'est-ce qu'il y a comme ingrédients dans le réfrigérateur"
+          - "Quels produits individuels sont dans le frigo"
+  FridgeAssistantListInventory:
+    data:
+      - sentences:
+          - "Qu'est-ce qu'il y a dans le frigo"
+          - "Qu'est-ce qu'il y a dans le réfrigérateur"
+          - "Liste l'inventaire du frigo"
+          - "Quels produits sont dans le réfrigérateur"
+          - "Qu'est-ce qu'il y a dans le congélateur"
+        slots:
+          location:
+            - "réfrigérateur"
+            - "frigo"
+            - "congélateur"
+            - "garde-manger"

@@ -1,0 +1,22 @@
+language: "en"
+intents:
+  FridgeAssistantListIngredients:
+    data:
+      - sentences:
+          - "What ingredients are in the fridge"
+          - "List the ingredients in the refrigerator"
+          - "Which individual ingredients do I have"
+          - "What's in the fridge as ingredients"
+  FridgeAssistantListInventory:
+    data:
+      - sentences:
+          - "What's in the fridge"
+          - "What's in the refrigerator"
+          - "List my fridge inventory"
+          - "What food is in the freezer"
+        slots:
+          location:
+            - "fridge"
+            - "refrigerator"
+            - "freezer"
+            - "pantry"

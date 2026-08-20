@@ -48,7 +48,8 @@
         "name": "Expirés"
       },
       "items_inventory": {
-        "name": "Inventaire des produits"
+        "name": "Inventaire des produits",
+        "description": "Liste complète des articles actifs (nom, contenu, quantité, date limite, portions) et sous-liste ingredients pour Assist."
       }
     }
   },

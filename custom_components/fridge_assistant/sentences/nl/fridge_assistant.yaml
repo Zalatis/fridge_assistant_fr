@@ -1,0 +1,21 @@
+language: "nl"
+intents:
+  FridgeAssistantListIngredients:
+    data:
+      - sentences:
+          - "Welke ingrediënten zitten er in de koelkast"
+          - "Welke losse ingrediënten heb ik"
+          - "Geef me de ingrediënten uit de koelkast"
+          - "Wat voor ingrediënten liggen er in de koelkast"
+  FridgeAssistantListInventory:
+    data:
+      - sentences:
+          - "Wat zit er in de koelkast"
+          - "Wat staat er in de inventaris"
+          - "Geef me de inhoud van de koelkast"
+          - "Wat ligt er in de vriezer"
+        slots:
+          location:
+            - "koelkast"
+            - "vriezer"
+            - "buiten koelkast"

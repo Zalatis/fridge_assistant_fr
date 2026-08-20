@@ -299,7 +299,8 @@ automations and external tools:
 | `storage_key` | `fridge_assistant.data` (Home Assistant Store key) |
 | `storage_file` | Absolute path, e.g. `/config/.storage/fridge_assistant.data` |
 | `storage_modified` | Last write time of that file (UTC ISO), when present |
-| `items` | List of objects, each with `name`, `contents`, `quantity`, `expiry_date`, plus `id`, `code`, `days_left` |
+| `items` | List of objects, each with `name`, `contents`, `quantity`, `expiry_date`, `portions` (list of `{n, status}`), `portions_total`, `portions_open`, plus `id`, `code`, `days_left` |
+| `ingredients` | Same shape as `items`, but only entries with `kind=ingredient` (handy for Assist and automations) |
 
 Example attribute row:
 
@@ -317,6 +318,24 @@ items:
 The sensor reads live data from the integration store (the same source persisted to
 `.storage/fridge_assistant.data`). Reload the integration or restart Home Assistant after upgrading
 to pick up the new entity.
+
+### Assist / conversation
+
+Two intents are registered for Home Assistant Assist (chat **and** voice when sentences are
+installed):
+
+- **`FridgeAssistantListIngredients`** — individual ingredients only
+- **`FridgeAssistantListInventory`** — full inventory (optional `location` slot)
+
+**Text chat:** ask e.g. *« Quels ingrédients ai-je dans le frigo ? »* — the conversation agent
+calls the intent tool automatically (Home Assistant 2024.10+ with the `llm` integration).
+
+**Voice:** copy the YAML files from
+`custom_components/fridge_assistant/sentences/<language>/fridge_assistant.yaml` into
+`config/custom_sentences/<language>/`, then reload the **Conversation** integration (or restart HA).
+
+You can also expose `sensor.*_items_inventory` to Assist (*Settings → Voice assistants → Assist →
+Expose entities*) and read the `ingredients` attribute from automations.
 
 ## Optional: Label Printer add-on
 

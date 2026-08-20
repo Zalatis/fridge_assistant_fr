@@ -28,6 +28,7 @@ from .const import (
     resolve_language,
 )
 from .coordinator import FridgeRuntime
+from .intent import async_register_intents, async_unregister_intents
 from .services import async_setup_services, async_unload_services
 from .store import FridgeStore
 from .websocket_api import async_register_websocket
@@ -51,6 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _async_register_static(hass)
     await _async_register_panel(hass)
     async_setup_services(hass)
+    async_register_intents(hass)
     async_register_websocket(hass)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -101,10 +103,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             frontend.async_remove_panel(hass, PANEL_URL_PATH)
         # Remove services only when the last entry is gone.
         remaining = [
-            k for k in hass.data[DOMAIN] if k != _STATIC_REGISTERED
+            k for k in hass.data[DOMAIN]
+            if k not in (_STATIC_REGISTERED, "intents_registered", "intent_handlers")
         ]
         if not remaining:
             async_unload_services(hass)
+            async_unregister_intents(hass)
     return unloaded
 
 

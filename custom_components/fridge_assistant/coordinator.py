@@ -48,7 +48,7 @@ from .const import (
     location_label as get_location_label,
     resolve_language,
 )
-from .store import FridgeStore, item_days_left
+from .store import FridgeStore, default_portions, item_days_left
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -94,8 +94,20 @@ def item_summary(item: dict[str, Any], today: date) -> dict[str, Any]:
     }
 
 
+def inventory_portions(item: dict[str, Any]) -> list[dict[str, Any]]:
+    """Public portion snapshot for sensors and Assist (n + status only)."""
+    raw = item.get("portions")
+    if not isinstance(raw, list) or not raw:
+        raw = default_portions(1)
+    return [
+        {"n": int(p.get("n", idx + 1)), "status": p.get("status", "open")}
+        for idx, p in enumerate(raw)
+    ]
+
+
 def inventory_item_row(item: dict[str, Any], today: date | None = None) -> dict[str, Any]:
     """Full row for the inventory sensor (automations, external tools)."""
+    portions = inventory_portions(item)
     row = {
         "id": item.get("id"),
         "code": item.get("code"),
@@ -103,10 +115,79 @@ def inventory_item_row(item: dict[str, Any], today: date | None = None) -> dict[
         "contents": item.get("contents"),
         "quantity": item.get("quantity"),
         "expiry_date": item.get("expiry_date"),
+        "portions": portions,
+        "portions_total": len(portions),
+        "portions_open": sum(1 for p in portions if p.get("status") == "open"),
     }
     if today is not None:
         row["days_left"] = item_days_left(item, today)
     return row
+
+
+def sorted_inventory_items(store: FridgeStore) -> list[dict[str, Any]]:
+    """Active items sorted by expiry, then name."""
+    items = list(store.items.values())
+    items.sort(
+        key=lambda i: (
+            i.get("expiry_date") is None,
+            i.get("expiry_date") or "",
+            (i.get("name") or "").lower(),
+        )
+    )
+    return items
+
+
+_INVENTORY_SPEECH: dict[str, dict[str, str]] = {
+    "nl": {
+        "empty_ingredients": "Er staan geen ingrediënten in de inventaris.",
+        "empty_inventory": "De inventaris is leeg.",
+        "ingredients_intro": "Ingrediënten in de koelkast:",
+        "inventory_intro": "Dit staat er in de inventaris:",
+        "no_date": "geen datum",
+        "expiry": "houdbaar tot {date}",
+        "portions": "{open} van {total} porties open",
+    },
+    "fr": {
+        "empty_ingredients": "Il n’y a aucun ingrédient dans l’inventaire.",
+        "empty_inventory": "L’inventaire est vide.",
+        "ingredients_intro": "Ingrédients au réfrigérateur :",
+        "inventory_intro": "Voici l’inventaire :",
+        "no_date": "sans date",
+        "expiry": "à consommer avant le {date}",
+        "portions": "{open} portion(s) ouverte(s) sur {total}",
+    },
+    "en": {
+        "empty_ingredients": "There are no ingredients in the inventory.",
+        "empty_inventory": "The inventory is empty.",
+        "ingredients_intro": "Ingredients in the fridge:",
+        "inventory_intro": "Here is the inventory:",
+        "no_date": "no date",
+        "expiry": "use by {date}",
+        "portions": "{open} of {total} portions open",
+    },
+}
+
+
+def format_inventory_speech(
+    rows: list[dict[str, Any]], lang: str, *, intro_key: str
+) -> str:
+    """Build a spoken/listable answer for Assist and voice intents."""
+    strings = _INVENTORY_SPEECH.get(lang) or _INVENTORY_SPEECH["en"]
+    if not rows:
+        return strings["empty_ingredients" if intro_key == "ingredients_intro" else "empty_inventory"]
+    lines = [strings[intro_key]]
+    for row in rows:
+        name = row.get("name") or "?"
+        expiry = row.get("expiry_date") or strings["no_date"]
+        bit = f"{name} ({strings['expiry'].format(date=expiry)})"
+        total = int(row.get("portions_total") or 1)
+        if total > 1:
+            open_n = int(row.get("portions_open") or 0)
+            bit += f", {strings['portions'].format(open=open_n, total=total)}"
+        if row.get("quantity"):
+            bit += f", {row['quantity']}"
+        lines.append(f"- {bit}")
+    return "\n".join(lines)
 
 
 class FridgeRuntime:

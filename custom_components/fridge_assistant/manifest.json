@@ -2,7 +2,8 @@
   "domain": "fridge_assistant",
   "name": "Fridge Assistant",
   "after_dependencies": [
-    "conversation"
+    "conversation",
+    "llm"
   ],
   "codeowners": [
     "@MaxGramser"

@@ -48,7 +48,8 @@
         "name": "Over datum"
       },
       "items_inventory": {
-        "name": "Productinventaris"
+        "name": "Productinventaris",
+        "description": "Volledige lijst actieve items (naam, inhoud, hoeveelheid, datum, porties) plus een ingrediënten-subset voor Assist."
       }
     }
   },

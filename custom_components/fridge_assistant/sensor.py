@@ -12,8 +12,13 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_WARN_DAYS, DOMAIN, LOCATIONS, SIGNAL_UPDATED, STORAGE_KEY, resolve_language
-from .coordinator import FridgeRuntime, inventory_item_row, item_summary
+from .const import CONF_WARN_DAYS, DOMAIN, KIND_INGREDIENT, LOCATIONS, SIGNAL_UPDATED, STORAGE_KEY, resolve_language
+from .coordinator import (
+    FridgeRuntime,
+    inventory_item_row,
+    item_summary,
+    sorted_inventory_items,
+)
 
 
 async def async_setup_entry(
@@ -148,18 +153,14 @@ class FridgeInventorySensor(_FridgeSensorBase):
     @property
     def extra_state_attributes(self) -> dict:
         today = dt_util.now().date()
-        items = list(self._runtime.store.items.values())
-        items.sort(
-            key=lambda i: (
-                i.get("expiry_date") is None,
-                i.get("expiry_date") or "",
-                (i.get("name") or "").lower(),
-            )
-        )
+        items = sorted_inventory_items(self._runtime.store)
+        rows = [inventory_item_row(i, today) for i in items]
+        ingredients = [row for i, row in zip(items, rows) if i.get("kind") == KIND_INGREDIENT]
         attrs = {
             "storage_key": STORAGE_KEY,
             "storage_file": self.hass.config.path(f".storage/{STORAGE_KEY}"),
-            "items": [inventory_item_row(i, today) for i in items],
+            "items": rows,
+            "ingredients": ingredients,
         }
         attrs.update(self._storage_stats())
         return attrs

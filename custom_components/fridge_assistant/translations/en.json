@@ -48,7 +48,8 @@
         "name": "Expired"
       },
       "items_inventory": {
-        "name": "Product inventory"
+        "name": "Product inventory",
+        "description": "Full list of active items (name, contents, quantity, expiry, portions) plus an ingredients sub-list for Assist."
       }
     }
   },
